@@ -1,100 +1,87 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score, confusion_matrix, roc_curve, auc, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, confusion_matrix
 
 # ============================
-# LOAD DATASET
+# LOAD DATA
 # ============================
 df = pd.read_csv("heart_failure_clinical_records.csv")
 print(df.info())
-print(df.head())
 
 # ============================
-# FEATURES / TARGET
+# SELECT ONLY A FEW FEATURES
 # ============================
-X = df.drop("DEATH_EVENT", axis=1)
-Y = df["DEATH_EVENT"]
+features = ['age', 'ejection_fraction', 'serum_creatinine']
+X = df[features]
+Y = df['DEATH_EVENT']
 
 # ============================
-# TRAIN TEST SPLIT
+# SPLIT TRAIN / TEST
 # ============================
 X_train, X_test, Y_train, Y_test = train_test_split(
     X, Y, test_size=0.2, random_state=42, stratify=Y
 )
 
 # ============================
-# SCALING (KNN NEEDS IT)
+# SCALING
 # ============================
-s = StandardScaler()
-Xs_train = s.fit_transform(X_train)
-Xs_test = s.transform(X_test)
+S = StandardScaler()
+X_train_scaled = S.fit_transform(X_train)
+X_test_scaled = S.transform(X_test)
 
 # ============================
 # KNN MODEL
 # ============================
-model = KNeighborsClassifier(n_neighbors=5)
-model.fit(Xs_train, Y_train)
+mymodel = KNeighborsClassifier(n_neighbors=5)
+knn = mymodel.fit(X_train_scaled, Y_train)
 
-ypred = model.predict(Xs_test)
-yprob = model.predict_proba(Xs_test)[:, 1]   # for ROC curve
+Y_pred = knn.predict(X_test_scaled)
+print("Predicted values:", Y_pred)
 
 # ============================
 # METRICS
 # ============================
-acc = accuracy_score(Y_test, ypred)
-prec = precision_score(Y_test, ypred)
-rec = recall_score(Y_test, ypred)
-f1 = f1_score(Y_test, ypred)
+acc = accuracy_score(Y_test, Y_pred)
+print("Accuracy:", acc)
 
-print("\n===== KNN RESULTS =====")
-print("Accuracy :", acc)
-print("Precision:", prec)
-print("Recall   :", rec)
-print("F1-score :", f1)
-
-print("\nConfusion Matrix:")
-print(confusion_matrix(Y_test, ypred))
+cm = confusion_matrix(Y_test, Y_pred)
+print("Confusion Matrix (raw numbers):")
+print(cm)
 
 # ============================
-# PLOT: CONFUSION MATRIX
+# CONFUSION MATRIX PLOT
 # ============================
-cm = confusion_matrix(Y_test, ypred)
 plt.figure(figsize=(4,4))
 plt.imshow(cm, cmap='Blues')
-plt.title("Confusion Matrix - KNN")
 plt.colorbar()
 
-labels = ["No Death", "Death"]
-plt.xticks([0,1], labels)
-plt.yticks([0,1], labels)
+# Labels
+classes = ['No Death', 'Death']
+plt.xticks([0, 1], classes)
+plt.yticks([0, 1], classes)
 
+# Write numbers in each cell
 for i in range(2):
     for j in range(2):
-        plt.text(j, i, cm[i,j], ha='center', va='center', color='black')
+        plt.text(j, i, cm[i, j], ha='center', va='center', color='black')
 
+plt.title("Confusion Matrix - KNN")
 plt.xlabel("Predicted")
 plt.ylabel("True")
 plt.tight_layout()
 plt.show()
 
 # ============================
-# PLOT: ROC CURVE
+# SIMPLE SCATTER PLOT
 # ============================
-fpr, tpr, _ = roc_curve(Y_test, yprob)
-roc_auc = auc(fpr, tpr)
-
-plt.figure(figsize=(6,5))
-plt.plot(fpr, tpr, label=f"KNN (AUC = {roc_auc:.3f})")
-plt.plot([0,1],[0,1],'k--')
-plt.xlabel("False Positive Rate")
-plt.ylabel("True Positive Rate")
-plt.title("ROC Curve - KNN")
-plt.legend()
+plt.scatter(df['age'], df['ejection_fraction'], c=df['DEATH_EVENT'], cmap='viridis')
+plt.xlabel("Age")
+plt.ylabel("Ejection Fraction")
+plt.title("Age vs Ejection Fraction (colored by DEATH_EVENT)")
 plt.show()
 
-print("\nModel training done (KNN only). Further models will be implemented later.")
+print("KNN model done.")
