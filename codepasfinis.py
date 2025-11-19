@@ -6,45 +6,27 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
 
-# ============================
-# LOAD DATA
-# ============================
 df = pd.read_csv("heart_failure_clinical_records.csv")
 print(df.info())
 
-# ============================
-# SELECT ONLY A FEW FEATURES
-# ============================
 features = ['age', 'ejection_fraction', 'serum_creatinine']
 X = df[features]
 Y = df['DEATH_EVENT']
 
-# ============================
-# SPLIT TRAIN / TEST
-# ============================
 X_train, X_test, Y_train, Y_test = train_test_split(
     X, Y, test_size=0.2, random_state=42, stratify=Y
 )
 
-# ============================
-# SCALING
-# ============================
 S = StandardScaler()
 X_train_scaled = S.fit_transform(X_train)
 X_test_scaled = S.transform(X_test)
 
-# ============================
-# KNN MODEL
-# ============================
 mymodel = KNeighborsClassifier(n_neighbors=5)
 knn = mymodel.fit(X_train_scaled, Y_train)
 
 Y_pred = knn.predict(X_test_scaled)
 print("Predicted values:", Y_pred)
 
-# ============================
-# METRICS
-# ============================
 acc = accuracy_score(Y_test, Y_pred)
 print("Accuracy:", acc)
 
@@ -52,19 +34,14 @@ cm = confusion_matrix(Y_test, Y_pred)
 print("Confusion Matrix (raw numbers):")
 print(cm)
 
-# ============================
-# CONFUSION MATRIX PLOT
-# ============================
 plt.figure(figsize=(4,4))
 plt.imshow(cm, cmap='Blues')
 plt.colorbar()
 
-# Labels
 classes = ['No Death', 'Death']
 plt.xticks([0, 1], classes)
 plt.yticks([0, 1], classes)
 
-# Write numbers in each cell
 for i in range(2):
     for j in range(2):
         plt.text(j, i, cm[i, j], ha='center', va='center', color='black')
@@ -75,9 +52,6 @@ plt.ylabel("True")
 plt.tight_layout()
 plt.show()
 
-# ============================
-# SIMPLE SCATTER PLOT
-# ============================
 plt.scatter(df['age'], df['ejection_fraction'], c=df['DEATH_EVENT'], cmap='viridis')
 plt.xlabel("Age")
 plt.ylabel("Ejection Fraction")
