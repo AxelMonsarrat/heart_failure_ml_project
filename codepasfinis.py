@@ -12,14 +12,13 @@ print(df.info())
 X = df[['age', 'ejection_fraction', 'serum_creatinine']] 
 Y = df['DEATH_EVENT'] 
 
-X_train, X_test, Y_train, Y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=42, stratify=Y) 
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42, stratify=Y) 
 
 S = StandardScaler()
 X_train_scaled = S.fit_transform(X_train)   # normaliser les données d'entraînement
 X_test_scaled = S.transform(X_test)         # normaliser les données de test
 
-mymodel = KNeighborsClassifier(n_neighbors=5)  
+mymodel = KNeighborsClassifier(n_neighbors=3)  
 knn = mymodel.fit(X_train_scaled, Y_train)    
 
 Y_pred = knn.predict(X_test_scaled)   # prédire les résultats sur les données de test
