@@ -14,7 +14,7 @@ print(df.info())
 # UTILISATION DE 8 PARAMÈTRES CLINIQUES
 # ----------------------------------------------------
 X = df[['age','anaemia','high_blood_pressure','diabetes',
-        'ejection_fraction','serum_creatinine','serum_sodium','time']]
+        'ejection_fraction','serum_creatinine','serum_sodium','platelets']]
 Y = df['DEATH_EVENT']
 
 # Train/Test split
