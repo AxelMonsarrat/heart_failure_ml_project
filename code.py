@@ -6,20 +6,22 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_curve, auc
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.neural_network import MLPClassifier   # Réseau de neurones sklearn
 
 df = pd.read_csv("heart_failure_clinical_records.csv")
 print(df.info())
 
-# ----------------------------------------------------
-# UTILISATION DE 8 PARAMÈTRES CLINIQUES
-# ----------------------------------------------------
+# -----------------------------------------------
+# On utilise 8 paramètres cliniques
+# -----------------------------------------------
 X = df[['age','anaemia','high_blood_pressure','diabetes',
         'ejection_fraction','serum_creatinine','serum_sodium','platelets']]
 Y = df['DEATH_EVENT']
 
 # Train/Test split
 X_train, X_test, Y_train, Y_test = train_test_split(
-    X, Y, test_size=0.2, random_state=42, stratify=Y)
+    X, Y, test_size=0.2, random_state=42, stratify=Y
+)
 
 # Normalisation
 S = StandardScaler()
@@ -27,7 +29,7 @@ X_train_scaled = S.fit_transform(X_train)
 X_test_scaled = S.transform(X_test)
 
 # ======================================================
-# PARTIE 1 : Différents KNN
+# 1) KNN avec plusieurs valeurs de k
 # ======================================================
 k_values = [1, 3, 5, 7, 9]
 results_knn = {}
@@ -46,7 +48,7 @@ for k in k_values:
     print("Confusion Matrix:\n", cm)
 
 # ======================================================
-# PARTIE 2 : Random Forest
+# 2) Random Forest
 # ======================================================
 rf = RandomForestClassifier(n_estimators=300, random_state=42)
 rf.fit(X_train, Y_train)
@@ -59,7 +61,7 @@ print("Accuracy:", rf_acc)
 print(rf_cm)
 
 # ======================================================
-# PARTIE 3 : Gradient Boosting (XGBoost simplifié)
+# 3) Gradient Boosting
 # ======================================================
 xgb = GradientBoostingClassifier(random_state=42)
 xgb.fit(X_train, Y_train)
@@ -70,6 +72,36 @@ xgb_cm = confusion_matrix(Y_test, xgb_pred)
 print("\n===== XG BOOSTING =====")
 print("Accuracy:", xgb_acc)
 print(xgb_cm)
+
+# ======================================================
+# 4) Réseau de neurones (MLPClassifier sklearn)
+# ======================================================
+nn = MLPClassifier(hidden_layer_sizes=(16, 8),
+                   activation='relu',
+                   solver='adam',
+                   max_iter=500,
+                   random_state=42)
+
+nn.fit(X_train_scaled, Y_train)
+nn_pred = nn.predict(X_test_scaled)
+
+nn_acc = accuracy_score(Y_test, nn_pred)
+nn_cm = confusion_matrix(Y_test, nn_pred)
+
+print("\n===== NEURAL NETWORK (MLPClassifier) =====")
+print("Accuracy:", nn_acc)
+print("Confusion Matrix:\n", nn_cm)
+
+# ======================================================
+# Résumé global
+# ======================================================
+print("\n=========== MODEL SUMMARY ===========")
+for k in k_values:
+    print(f"KNN k={k} -> Accuracy: {results_knn[k][0]}")
+
+print(f"Random Forest  -> Accuracy: {rf_acc}")
+print(f"XG Boosting    -> Accuracy: {xgb_acc}")
+print(f"Neural Network -> Accuracy: {nn_acc}")
 
 # ======================================================
 # PLOT 1 — ROC CURVES de KNN vs RF vs XGB
